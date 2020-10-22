@@ -4,23 +4,25 @@
     - python 3.6+
     - pip3
 
-# Instalação
+## Instalação
 
-    # Linux
+### Linux
+
     python3 -m venv venv
     source venv/bin/activate
     pip install -r requirements.txt
 
-    # Windows
+### Windows
+
     python -m venv venv
     venv\Scripts\Activate
     pip install -r requirements.txt
 
-# Uso
+## Uso
 
     # Servidor
     python -m server
 
-# Testes
+## Testes
 
     pytest test_server.py
