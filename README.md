@@ -25,4 +25,4 @@
 
 ## Testes
 
-    pytest test_server.py
+    pytest tests

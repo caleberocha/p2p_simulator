@@ -1,14 +1,18 @@
 import os
+import sys
 import json
 from time import sleep
 import pytest
 
+# Estas definições estão antes dos imports do server para que este seja inicializado com variáveis de teste
 TESTDB = os.path.dirname(os.path.realpath(__file__)) + "/p2pservertest.db"
 # Não vamos esperar 5 segundos nos testes de sessão =)
 ALIVE_TIME = 1
-
 os.environ["ALIVE_TIME"] = str(ALIVE_TIME)
 os.environ["APPDB"] = TESTDB
+
+# Adiciona o diretório acima ao path, para que o server seja encontrado
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from server import seed
 from server.webserver import create_app
