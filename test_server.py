@@ -1,8 +1,13 @@
 import os
 import json
+from time import sleep
 import pytest
 
 TESTDB = os.path.dirname(os.path.realpath(__file__)) + "/p2pservertest.db"
+# Não vamos esperar 5 segundos nos testes de sessão =)
+ALIVE_TIME = 1
+
+os.environ["ALIVE_TIME"] = str(ALIVE_TIME)
 os.environ["APPDB"] = TESTDB
 
 from server import seed
@@ -70,7 +75,7 @@ def test_search(client):
     )
     assert rs.status_code == 201
 
-    rs = client.get(path="/search")
+    rs = client.post(path="/search", data=json.dumps(DATA_REGISTER))
     data = json.loads(rs.data)
     assert all(
         elem in data["files"]
@@ -79,3 +84,37 @@ def test_search(client):
             for d in DATA_OFFERFILES["files"]
         ]
     )
+
+
+def test_not_alive(client):
+    rs = client.post(path="/register", data=json.dumps(DATA_REGISTER))
+    assert rs.status_code == 200
+
+    sleep(ALIVE_TIME + 0.01)
+
+    rs = client.post(
+        path="/offerfiles",
+        data=json.dumps(DATA_OFFERFILES),
+    )
+    assert rs.status_code == 401
+
+
+def test_iamalive(client):
+    rs = client.post(path="/register", data=json.dumps(DATA_REGISTER))
+    assert rs.status_code == 200
+
+    sleep(ALIVE_TIME * 0.75)
+
+    rs = client.post(
+        path="/iamalive",
+        data=json.dumps(DATA_OFFERFILES),
+    )
+    assert rs.status_code == 200
+
+    sleep(ALIVE_TIME * 0.75)
+
+    rs = client.post(
+        path="/offerfiles",
+        data=json.dumps(DATA_OFFERFILES),
+    )
+    assert rs.status_code == 201

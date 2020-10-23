@@ -1,0 +1,2 @@
+class IsNotAliveError(Exception):
+    pass

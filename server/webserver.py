@@ -1,7 +1,10 @@
-from datetime import datetime
+import os
+from datetime import datetime, timedelta
+from server.errors import IsNotAliveError
 from flask import Flask, request
-from .classes.peer import Peer, DoesNotExist
-from .classes.file import File
+from .models.peer import Peer, DoesNotExist
+from .models.file import File
+from . import constants
 
 
 def create_app():
@@ -19,9 +22,9 @@ def create_app():
         req = request.get_json(force=True)
 
         try:
-            peer = Peer.select().where(Peer.ip == req["ip"]).get()
-        except DoesNotExist:
-            return {"error": "You are not registered"}, 401
+            peer = get_alive_peer(req["ip"])
+        except IsNotAliveError as e:
+            return {"error": str(e)}, 401
 
         files = req["files"]
 
@@ -31,9 +34,53 @@ def create_app():
 
         return {"success": True}, 201
 
-    @app.route("/search", methods=["GET"])
+    @app.route("/search", methods=["POST"])
     def search_files():
-        files = File.select(File.name, File.filehash.alias("hash"), Peer.ip).join(Peer).dicts()
+        req = request.get_json(force=True)
+
+        try:
+            peer = get_alive_peer(req["ip"])
+        except IsNotAliveError as e:
+            return {"error": str(e)}, 401
+
+        files = (
+            File.select(File.name, File.filehash.alias("hash"), Peer.ip)
+            .join(Peer)
+            .dicts()
+        )
         return {"files": [f for f in files]}
+
+    @app.route("/iamalive", methods=["POST"])
+    def alive():
+        req = request.get_json(force=True)
+
+        try:
+            peer = get_alive_peer(req["ip"])
+        except IsNotAliveError as e:
+            return {"error": str(e)}, 401
+
+        peer.last_login = datetime.now()
+        peer.save()
+
+        return {"alive": True}
+
+    def get_alive_peer(ip):
+        try:
+            return (
+                Peer.select()
+                .where(
+                    Peer.ip == ip,
+                    Peer.last_login
+                    >= datetime.now()
+                    - timedelta(
+                        seconds=int(os.getenv("ALIVE_TIME"))
+                        if os.getenv("ALIVE_TIME")
+                        else constants.ALIVE_TIME
+                    ),
+                )
+                .get()
+            )
+        except DoesNotExist:
+            raise IsNotAliveError("You are not registered")
 
     return app
