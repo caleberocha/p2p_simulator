@@ -63,6 +63,7 @@ def get_files(ip):
     files = (
         File.select(
             File.name,
+            File.size,
             File.filehash.alias("hash"),
             fn.GROUP_CONCAT(Peer.ip).alias("peers"),
         )
@@ -74,7 +75,7 @@ def get_files(ip):
     )
     return {
         "files": [
-            {"name": f["name"], "hash": f["hash"], "peers": f["peers"].split(",")}
+            {"name": f["name"], "size": f["size"], "hash": f["hash"], "peers": f["peers"].split(",")}
             for f in files
         ]
     }

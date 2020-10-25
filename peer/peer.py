@@ -6,6 +6,7 @@ from time import sleep
 import requests
 from requests.models import HTTPError
 from tabulate import tabulate
+from humanize import naturalsize
 from .listener import Listener
 from .keep_alive import KeepAlive
 from . import constants
@@ -70,10 +71,10 @@ class Peer:
         print(
             tabulate(
                 [
-                    (i, f["name"], f["hash"], len(f["peers"]))
+                    (i, f["name"], naturalsize(f["size"], binary=True), f["hash"], len(f["peers"]))
                     for i, f in enumerate(files)
                 ],
-                headers=["#", "Name", "Hash", "Peers"],
+                headers=["#", "Name", "Size", "Hash", "Peers"],
             )
         )
 
@@ -122,7 +123,7 @@ class Peer:
             self.listener.start()
             print()
         except requests.exceptions.ConnectionError:
-            print("Server offline")
+            print("ERROR: Server offline")
             return
         except Exception as e:
             print(f"Error: {e}")
@@ -143,7 +144,7 @@ class Peer:
                 try:
                     self.search()
                 except requests.exceptions.ConnectionError:
-                    print("Server offline")
+                    print("ERROR: Server offline")
                     break
                 except HTTPError as e:
                     print(e)
