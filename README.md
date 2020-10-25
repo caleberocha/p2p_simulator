@@ -22,6 +22,9 @@
 
     # Servidor
     python -m server
+    
+    # Peer (listen_port é a utilizada para servir os arquivos)
+    python -m peer [listen_port]
 
 ## Testes
 
