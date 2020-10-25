@@ -1,9 +1,6 @@
-from hashlib import sha256
 import os
 from os.path import isfile
-import sys
 import socket
-import json
 import hashlib
 import requests
 from . import constants
@@ -36,10 +33,19 @@ class Peer:
     def start(self):
         print("Registering")
         self.register()
+        print()
+
         print("Offering files")
         self.offerfiles()
         print(f"{len(self.files)} files offered")
+        print()
         
-
+        print("Searching files")
+        rs = requests.post(self.server + constants.REQ_SEARCH, json={"ip": self.ip})
+        rs.raise_for_status()
+        for f in rs.json()["files"]:
+            print(f)
+        print()
         
+        print("Done")
 
