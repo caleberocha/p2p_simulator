@@ -35,6 +35,9 @@ Os scripts executam em modo interativo, deve ser executado um em cada terminal
     
     # Iniciar peer
     docker_scripts/peer.sh
+    
+    # Remover redes, containers e imagens
+    docker_scripts/cleanup.sh
 
 ## Testes
 
