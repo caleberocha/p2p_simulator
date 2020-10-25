@@ -31,6 +31,20 @@ DATA_OFFERFILES = {
         },
     ],
 }
+DATA_REGISTER2 = {"ip": "1.2.3.5"}
+DATA_OFFERFILES2 = {
+    "ip": "1.2.3.5",
+    "files": [
+        {
+            "name": "arquivo1",
+            "hash": "835480941C61BCD55A4BCB74CCB8A21833E34CD3F34CB977461539084A984A6C",
+        },
+        {
+            "name": "arquivo2",
+            "hash": "89D603EFB7FA042D322084A459E796764191111E5D9F46EBFB77D1D711EB4557",
+        },
+    ],
+}
 
 
 @pytest.fixture
@@ -79,12 +93,21 @@ def test_search(client):
     )
     assert rs.status_code == 201
 
+    rs = client.post(path="/register", data=json.dumps(DATA_REGISTER2))
+    assert rs.status_code == 200
+
+    rs = client.post(
+        path="/offerfiles",
+        data=json.dumps(DATA_OFFERFILES2),
+    )
+    assert rs.status_code == 201
+
     rs = client.post(path="/search", data=json.dumps(DATA_REGISTER))
     data = json.loads(rs.data)
     assert all(
         elem in data["files"]
         for elem in [
-            {"ip": DATA_OFFERFILES["ip"], "hash": d["hash"], "name": d["name"]}
+            {"hash": d["hash"], "name": d["name"], "peers": [DATA_REGISTER["ip"], DATA_REGISTER2["ip"]]}
             for d in DATA_OFFERFILES["files"]
         ]
     )
