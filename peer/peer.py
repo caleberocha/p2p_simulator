@@ -17,6 +17,7 @@ class Peer:
     def register(self):
         rs = requests.post(self.server + constants.REQ_REGISTER, json={"ip": self.ip})
         rs.raise_for_status()
+
         self.registered = True
 
     def offerfiles(self):
@@ -30,6 +31,12 @@ class Peer:
         rs = requests.post(self.server + constants.REQ_OFFERFILES, json={"ip": self.ip, "files": self.files})
         rs.raise_for_status()
 
+    def search(self):
+        rs = requests.post(self.server + constants.REQ_SEARCH, json={"ip": self.ip})
+        rs.raise_for_status()
+
+        return rs.json()["files"]
+
     def start(self):
         print("Registering")
         self.register()
@@ -41,9 +48,8 @@ class Peer:
         print()
         
         print("Searching files")
-        rs = requests.post(self.server + constants.REQ_SEARCH, json={"ip": self.ip})
-        rs.raise_for_status()
-        for f in rs.json()["files"]:
+        
+        for f in self.search():
             print(f)
         print()
         
