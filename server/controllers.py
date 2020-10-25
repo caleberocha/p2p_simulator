@@ -6,19 +6,21 @@ from .models import File, Peer, FilePeer
 from .errors import IsNotAliveError
 
 
+def max_alive_time():
+    return datetime.now() - timedelta(
+        seconds=int(os.getenv("ALIVE_TIME"))
+        if os.getenv("ALIVE_TIME")
+        else constants.ALIVE_TIME
+    )
+
+
 def get_alive_peer(ip):
     try:
         return (
             Peer.select()
             .where(
                 Peer.ip == ip,
-                Peer.last_login
-                >= datetime.now()
-                - timedelta(
-                    seconds=int(os.getenv("ALIVE_TIME"))
-                    if os.getenv("ALIVE_TIME")
-                    else constants.ALIVE_TIME
-                ),
+                Peer.last_login >= max_alive_time(),
             )
             .get()
         )
@@ -66,6 +68,7 @@ def get_files(ip):
         )
         .join(FilePeer)
         .join(Peer)
+        .where(Peer.ip != ip, Peer.last_login >= max_alive_time())
         .group_by(File)
         .dicts()
     )

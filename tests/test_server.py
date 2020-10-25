@@ -107,7 +107,17 @@ def test_search(client):
     assert all(
         elem in data["files"]
         for elem in [
-            {"hash": d["hash"], "name": d["name"], "peers": [DATA_REGISTER["ip"], DATA_REGISTER2["ip"]]}
+            {"hash": d["hash"], "name": d["name"], "peers": [DATA_REGISTER2["ip"]]}
+            for d in DATA_OFFERFILES["files"]
+        ]
+    )
+
+    rs = client.post(path="/search", data=json.dumps(DATA_REGISTER2))
+    data = json.loads(rs.data)
+    assert all(
+        elem in data["files"]
+        for elem in [
+            {"hash": d["hash"], "name": d["name"], "peers": [DATA_REGISTER["ip"]]}
             for d in DATA_OFFERFILES["files"]
         ]
     )
