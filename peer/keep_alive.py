@@ -6,11 +6,11 @@ from . import constants
 
 
 class KeepAlive(Thread):
-    def __init__(self, server_url, client_addr):
+    def __init__(self, server_url, listen_port):
         super().__init__()
         self.running = True
+        self.listen_port = listen_port
         self.server_url = server_url
-        self.client_addr = client_addr
         self.registered = True
 
     def run(self):
@@ -18,7 +18,7 @@ class KeepAlive(Thread):
             sleep(constants.ALIVE_TIME)
             try:
                 rs = requests.post(
-                    self.server_url + constants.REQ_IAMALIVE, json={"ip": self.client_addr}
+                    self.server_url + constants.REQ_IAMALIVE, json={"listen_port": self.listen_port}
                 )
                 if rs.status_code == 200:
                     self.registered = True

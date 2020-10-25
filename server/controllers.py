@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from peewee import DoesNotExist, fn
 from . import constants
 from .models import File, Peer, FilePeer
-from .errors import IsNotAliveError
+from .errors import InvalidRequestError, IsNotAliveError
 
 
 def max_alive_time():
@@ -14,12 +14,12 @@ def max_alive_time():
     )
 
 
-def get_alive_peer(ip):
+def get_alive_peer(addr):
     try:
         return (
             Peer.select()
             .where(
-                Peer.ip == ip,
+                Peer.address == addr,
                 Peer.last_login >= max_alive_time(),
             )
             .get()
@@ -28,24 +28,39 @@ def get_alive_peer(ip):
         raise IsNotAliveError("You are not registered")
 
 
-def register_peer(ip):
+def register_peer(host, port):
     try:
-        peer = Peer.get(ip=ip)
+        addr = f"{host}:{int(port)}"
+    except ValueError:
+        raise InvalidRequestError("invalid listen_port")
+
+    try:
+        peer = Peer.get(address=addr)
         peer.last_login = datetime.now()
         peer.save()
     except DoesNotExist:
-        peer = Peer.create(ip=ip, last_login=datetime.now())
+        peer = Peer.create(address=addr, last_login=datetime.now())
 
 
-def refresh_peer(ip):
-    peer = get_alive_peer(ip)
+def refresh_peer(host, port):
+    try:
+        addr = f"{host}:{int(port)}"
+    except ValueError:
+        raise InvalidRequestError("invalid listen_port")
+
+    peer = get_alive_peer(addr)
 
     peer.last_login = datetime.now()
     peer.save()
 
 
-def add_files(ip, files):
-    peer = get_alive_peer(ip)
+def add_files(host, port, files):
+    try:
+        addr = f"{host}:{int(port)}"
+    except ValueError:
+        raise InvalidRequestError("invalid listen_port")
+
+    peer = get_alive_peer(addr)
 
     peer.files.clear()
     for f in files:
@@ -57,19 +72,24 @@ def add_files(ip, files):
         filerow.peers.add(peer)
 
 
-def get_files(ip):
-    peer = get_alive_peer(ip)
+def get_files(host, port):
+    try:
+        addr = f"{host}:{int(port)}"
+    except ValueError:
+        raise InvalidRequestError("invalid listen_port")
+
+    peer = get_alive_peer(addr)
 
     files = (
         File.select(
             File.name,
             File.size,
             File.filehash.alias("hash"),
-            fn.GROUP_CONCAT(Peer.ip).alias("peers"),
+            fn.GROUP_CONCAT(Peer.address).alias("peers"),
         )
         .join(FilePeer)
         .join(Peer)
-        .where(Peer.ip != ip, Peer.last_login >= max_alive_time())
+        .where(Peer.address != addr, Peer.last_login >= max_alive_time())
         .group_by(File)
         .dicts()
     )

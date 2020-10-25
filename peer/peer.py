@@ -17,23 +17,22 @@ class Peer:
         self.server = server
         self.listen_port = listen_port
         self.registered = False
-        self.ip = socket.gethostbyname(socket.gethostname())
         self.files = []
         self.listener = Listener(self.listen_port)
-        self.addr = f"{self.ip}:{self.listen_port}"
         self.keep_alive_thread = None
 
     def register(self):
         rs = requests.post(
             self.server + constants.REQ_REGISTER,
-            json={"ip": self.addr},
+            json={"listen_port": self.listen_port},
         )
-        rs.raise_for_status()
+        if 400 <= rs.status_code < 600:
+            raise HTTPError(f"""HTTP {rs.status_code} - {rs.json()["error"]}""")
 
         self.registered = True
 
     def keep_alive(self):
-        self.keep_alive_thread = KeepAlive(self.server, self.addr)
+        self.keep_alive_thread = KeepAlive(self.server, self.listen_port)
         self.keep_alive_thread.start()
 
     def offerfiles(self):
@@ -52,15 +51,17 @@ class Peer:
 
         rs = requests.post(
             self.server + constants.REQ_OFFERFILES,
-            json={"ip": self.addr, "files": self.files},
+            json={"listen_port": self.listen_port, "files": self.files},
         )
-        rs.raise_for_status()
+        if 400 <= rs.status_code < 600:
+            raise HTTPError(f"""HTTP {rs.status_code} - {rs.json()["error"]}""")
 
     def search(self):
         print("Searching files")
 
-        rs = requests.post(self.server + constants.REQ_SEARCH, json={"ip": self.addr})
-        rs.raise_for_status()
+        rs = requests.post(self.server + constants.REQ_SEARCH, json={"listen_port": self.listen_port})
+        if 400 <= rs.status_code < 600:
+            raise HTTPError(f"""HTTP {rs.status_code} - {rs.json()["error"]}""")
 
         files = rs.json()["files"]
         if len(files) == 0:

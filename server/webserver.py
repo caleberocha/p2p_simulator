@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from server.errors import IsNotAliveError
+from server.errors import InvalidRequestError, IsNotAliveError
 from flask import Flask, request
 
 from .controllers import (
@@ -17,7 +17,12 @@ def create_app():
     @app.route("/register", methods=["POST"])
     def register():
         req = request.get_json(force=True)
-        register_peer(req["ip"])
+        try:
+            listen_port = req["listen_port"]
+        except KeyError as e:
+            return {"error": f"{e} missing"}, 400
+
+        register_peer(request.remote_addr, listen_port)
 
         return {"success": True}
 
@@ -26,28 +31,34 @@ def create_app():
         req = request.get_json(force=True)
 
         try:
-            add_files(req["ip"], req["files"])
+            add_files(request.remote_addr, req["listen_port"], req["files"])
             return {"success": True}, 201
         except IsNotAliveError as e:
             return {"error": str(e)}, 401
+        except InvalidRequestError as e:
+            return {"error": str(e)}, 400
 
     @app.route("/search", methods=["POST"])
     def search_files():
         req = request.get_json(force=True)
 
         try:
-            return get_files(req["ip"])
+            return get_files(request.remote_addr, req["listen_port"])
         except IsNotAliveError as e:
             return {"error": str(e)}, 401
+        except InvalidRequestError as e:
+            return {"error": str(e)}, 400
 
     @app.route("/iamalive", methods=["POST"])
     def alive():
         req = request.get_json(force=True)
 
         try:
-            refresh_peer(req["ip"])
+            refresh_peer(request.remote_addr, req["listen_port"])
             return {"alive": True}
         except IsNotAliveError as e:
             return {"error": str(e)}, 401
+        except InvalidRequestError as e:
+            return {"error": str(e)}, 400
 
     return app

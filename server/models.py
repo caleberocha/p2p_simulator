@@ -14,7 +14,7 @@ class File(BaseModel):
 
 
 class Peer(BaseModel):
-    ip = CharField(unique=True)
+    address = CharField(unique=True)
     last_login = DateTimeField(null=True)
     files = ManyToManyField(File, backref="peers")
 

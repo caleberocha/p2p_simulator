@@ -17,33 +17,33 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from server import seed
 from server.webserver import create_app
 
-DATA_REGISTER = {"ip": "1.2.3.4"}
+DATA_REGISTER = {"listen_port": 5001}
 DATA_OFFERFILES = {
-    "ip": "1.2.3.4",
+    "listen_port": 5001,
     "files": [
         {
-            "name": "arquivo1",
+            "name": "file1",
             "size": 1234,
             "hash": "835480941C61BCD55A4BCB74CCB8A21833E34CD3F34CB977461539084A984A6C",
         },
         {
-            "name": "arquivo2",
+            "name": "file2",
             "size": 1235,
             "hash": "89D603EFB7FA042D322084A459E796764191111E5D9F46EBFB77D1D711EB4557",
         },
     ],
 }
-DATA_REGISTER2 = {"ip": "1.2.3.5"}
+DATA_REGISTER2 = {"listen_port": 5002}
 DATA_OFFERFILES2 = {
-    "ip": "1.2.3.5",
+    "listen_port": 5002,
     "files": [
         {
-            "name": "arquivo1",
+            "name": "file1",
             "size": 1234,
             "hash": "835480941C61BCD55A4BCB74CCB8A21833E34CD3F34CB977461539084A984A6C",
         },
         {
-            "name": "arquivo2",
+            "name": "file2",
             "size": 1235,
             "hash": "89D603EFB7FA042D322084A459E796764191111E5D9F46EBFB77D1D711EB4557",
         },
@@ -111,8 +111,8 @@ def test_search(client):
     assert all(
         elem in data["files"]
         for elem in [
-            {"hash": d["hash"], "name": d["name"], "peers": [DATA_REGISTER2["ip"]]}
-            for d in DATA_OFFERFILES["files"]
+            {"hash": d["hash"], "name": d["name"], "size": d["size"], "peers": [f"""127.0.0.1:{DATA_REGISTER2["listen_port"]}"""]}
+            for d in DATA_OFFERFILES2["files"]
         ]
     )
 
@@ -121,7 +121,7 @@ def test_search(client):
     assert all(
         elem in data["files"]
         for elem in [
-            {"hash": d["hash"], "name": d["name"], "peers": [DATA_REGISTER["ip"]]}
+            {"hash": d["hash"], "name": d["name"], "size": d["size"], "peers": [f"""127.0.0.1:{DATA_REGISTER["listen_port"]}"""]}
             for d in DATA_OFFERFILES["files"]
         ]
     )
