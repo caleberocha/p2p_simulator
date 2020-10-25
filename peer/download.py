@@ -1,12 +1,13 @@
 import os
 import socket
+import random
 from datetime import datetime, timezone
 from tabulate import tabulate
 from . import constants
 
 
 def download_file(filename, filehash, filesize, peers):
-    addr = peers[0].split(":")
+    addr = peers[random.randrange(0, len(peers))].split(":")
     addr[1] = int(addr[1])
     addr = tuple(addr)
 
