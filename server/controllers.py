@@ -64,6 +64,7 @@ def add_files(host, port, files):
 
     peer.files.clear()
     for f in files:
+        # print(f"Adding {f}")
         try:
             filerow = File.get(filehash=f["hash"])
         except DoesNotExist:

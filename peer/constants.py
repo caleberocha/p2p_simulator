@@ -1,4 +1,5 @@
 DIRECTORY_TO_SHARE = "/usr/src/app/peer"
+DOWNLOAD_DIRECTORY = "./download"
 
 LISTEN_PORT = 5001
 ALIVE_TIME = 5

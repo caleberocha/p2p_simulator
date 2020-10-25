@@ -1,3 +1,4 @@
+import os
 from threading import Thread
 import socket
 from . import constants
@@ -31,7 +32,7 @@ class Listener(Thread):
             try:
                 data = conn.recv(1024)
                 filehash = data.decode("utf-8")
-                print(f"filehash: {filehash}")
+                print(f"\rfilehash: {filehash}\n>", end="")
                 self.send_file(filehash, conn, addr)
             finally:
                 conn.close()
@@ -41,8 +42,9 @@ class Listener(Thread):
 
     def send_file(self, filehash, conn, addr):
         filename = next((f["name"] for f in self.files if f["hash"] == filehash), None)
-        print(f"\rServer: Sending file {filename} ({filehash}) to {addr}\n>", end="")
+        print(f"\rServer: Sending file {filename} to {addr}\n>", end="")
         if filename is None:
             conn.sendall(constants.FILE_NOT_FOUND)
         else:
-            conn.sendall(bytes(filename, "utf-8"))
+            with open(os.path.join(constants.DIRECTORY_TO_SHARE, filename), "rb") as f:
+                conn.sendall(f.read())

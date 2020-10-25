@@ -1,14 +1,13 @@
 import os
 from os.path import isfile
-import socket
 import hashlib
-from time import sleep
 import requests
 from requests.models import HTTPError
 from tabulate import tabulate
 from humanize import naturalsize
 from .listener import Listener
 from .keep_alive import KeepAlive
+from .download import download_file, list_downloaded_files
 from . import constants
 
 
@@ -59,7 +58,9 @@ class Peer:
     def search(self):
         print("Searching files")
 
-        rs = requests.post(self.server + constants.REQ_SEARCH, json={"listen_port": self.listen_port})
+        rs = requests.post(
+            self.server + constants.REQ_SEARCH, json={"listen_port": self.listen_port}
+        )
         if 400 <= rs.status_code < 600:
             raise HTTPError(f"""HTTP {rs.status_code} - {rs.json()["error"]}""")
 
@@ -72,7 +73,13 @@ class Peer:
         print(
             tabulate(
                 [
-                    (i, f["name"], naturalsize(f["size"], binary=True), f["hash"], len(f["peers"]))
+                    (
+                        i,
+                        f["name"],
+                        naturalsize(f["size"], binary=True),
+                        f["hash"],
+                        len(f["peers"]),
+                    )
                     for i, f in enumerate(files)
                 ],
                 headers=["#", "Name", "Size", "Hash", "Peers"],
@@ -87,25 +94,11 @@ class Peer:
                 return
             try:
                 i = int(idx)
-                self.download_file(files[i]["hash"], files[i]["peers"])
+                fr = files[i]
+                download_file(fr["name"], fr["hash"], fr["size"], fr["peers"])
                 return
             except (ValueError, IndexError):
                 print("Invalid value")
-
-    def download_file(self, filehash, peers):
-        addr = peers[0].split(":")
-        addr[1] = int(addr[1])
-        addr = tuple(addr)
-
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect(addr)
-
-        try:
-            sock.sendall(bytes(filehash, "utf-8"))
-            data = sock.recv(1024).decode("utf-8")
-            print(f"Received {data}")
-        finally:
-            sock.close()
 
     def start(self):
         try:
@@ -141,6 +134,8 @@ class Peer:
 
             if cmd in ["h", "help"]:
                 self.help()
+            elif cmd in ["l", "list"]:
+                list_downloaded_files()
             elif cmd in ["s", "search"]:
                 try:
                     self.search()
@@ -161,4 +156,14 @@ class Peer:
         print("Exiting")
 
     def help(self):
-        print("Commands:\ns -> search\nq -> quit\nh -> show commands")
+        print(
+            "\n".join(
+                [
+                    "Commands:",
+                    "s -> Search",
+                    "q -> Qquit",
+                    "l -> List downloaded files",
+                    "h -> Show commands",
+                ]
+            )
+        )
