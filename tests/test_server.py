@@ -23,10 +23,12 @@ DATA_OFFERFILES = {
     "files": [
         {
             "name": "arquivo1",
+            "size": 1234,
             "hash": "835480941C61BCD55A4BCB74CCB8A21833E34CD3F34CB977461539084A984A6C",
         },
         {
             "name": "arquivo2",
+            "size": 1235,
             "hash": "89D603EFB7FA042D322084A459E796764191111E5D9F46EBFB77D1D711EB4557",
         },
     ],
@@ -37,10 +39,12 @@ DATA_OFFERFILES2 = {
     "files": [
         {
             "name": "arquivo1",
+            "size": 1234,
             "hash": "835480941C61BCD55A4BCB74CCB8A21833E34CD3F34CB977461539084A984A6C",
         },
         {
             "name": "arquivo2",
+            "size": 1235,
             "hash": "89D603EFB7FA042D322084A459E796764191111E5D9F46EBFB77D1D711EB4557",
         },
     ],

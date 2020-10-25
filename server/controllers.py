@@ -50,9 +50,9 @@ def add_files(ip, files):
     peer.files.clear()
     for f in files:
         try:
-            filerow = File.get(name=f["name"], filehash=f["hash"])
+            filerow = File.get(filehash=f["hash"])
         except DoesNotExist:
-            filerow = File.create(name=f["name"], filehash=f["hash"])
+            filerow = File.create(name=f["name"], size=f["size"], filehash=f["hash"])
 
         filerow.peers.add(peer)
 

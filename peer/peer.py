@@ -42,7 +42,11 @@ class Peer:
             if isfile(filepath):
                 with open(filepath, "rb") as f:
                     self.files.append(
-                        {"name": filename, "hash": hashlib.sha256(f.read()).hexdigest()}
+                        {
+                            "name": filename,
+                            "size": os.path.getsize(filepath),
+                            "hash": hashlib.sha256(f.read()).hexdigest(),
+                        }
                     )
 
         rs = requests.post(
@@ -74,7 +78,9 @@ class Peer:
         )
 
         while True:
-            idx = input("Which file do you want to download? (Use # number or press c to cancel) ")
+            idx = input(
+                "Which file do you want to download? (Use # number or press c to cancel) "
+            )
             if idx == "c":
                 return
             try:
@@ -100,30 +106,29 @@ class Peer:
             sock.close()
 
     def start(self):
-        print("Registering")
         try:
+            print("Registering")
             self.register()
+
+            print("Offering files... ", end="")
+            self.offerfiles()
+            print(f"{len(self.files)} files offered")
+
+            print("Keeping alive")
+            self.keep_alive()
+
+            print("Creating listener")
+            self.listener.register_files(self.files)
+            self.listener.start()
+            print()
         except requests.exceptions.ConnectionError:
             print("Server offline")
             return
         except Exception as e:
             print(f"Error: {e}")
             return
-        print()
 
-        print("Offering files")
-        self.offerfiles()
-        print(f"{len(self.files)} files offered")
-        print()
-
-        print("Keeping alive")
-        self.keep_alive()
-
-        print("Creating listener")
-        self.listener.register_files(self.files)
-        self.listener.start()
-
-        print("Commands:\ns -> search\nq -> quit")
+        self.help()
         while True:
             if not self.keep_alive_thread.registered:
                 break
@@ -132,12 +137,19 @@ class Peer:
             if cmd in ["q", "quit"]:
                 break
 
-            if cmd in ["s", "search"]:
+            if cmd in ["h", "help"]:
+                self.help()
+            elif cmd in ["s", "search"]:
                 try:
                     self.search()
+                except requests.exceptions.ConnectionError:
+                    print("Server offline")
+                    break
                 except HTTPError as e:
                     print(e)
                     break
+            else:
+                print("Invalid command")
 
         self.stop()
 
@@ -145,3 +157,6 @@ class Peer:
         self.listener.stop()
         self.keep_alive_thread.stop()
         print("Exiting")
+
+    def help(self):
+        print("Commands:\ns -> search\nq -> quit\nh -> show commands")

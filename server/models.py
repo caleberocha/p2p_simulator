@@ -9,6 +9,7 @@ class BaseModel(Model):
 
 class File(BaseModel):
     name = CharField(unique=True)
+    size = IntegerField()
     filehash = CharField(max_length=64, unique=True)
 
 
