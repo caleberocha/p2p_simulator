@@ -96,7 +96,12 @@ def get_files(host, port):
     )
     return {
         "files": [
-            {"name": f["name"], "size": f["size"], "hash": f["hash"], "peers": f["peers"].split(",")}
+            {
+                "name": f["name"],
+                "size": f["size"],
+                "hash": f["hash"],
+                "peers": f["peers"].split(","),
+            }
             for f in files
         ]
     }

@@ -18,7 +18,8 @@ class KeepAlive(Thread):
             sleep(constants.ALIVE_TIME)
             try:
                 rs = requests.post(
-                    self.server_url + constants.REQ_IAMALIVE, json={"listen_port": self.listen_port}
+                    self.server_url + constants.REQ_IAMALIVE,
+                    json={"listen_port": self.listen_port},
                 )
                 if rs.status_code == 200:
                     self.registered = True

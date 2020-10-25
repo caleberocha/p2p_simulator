@@ -111,7 +111,12 @@ def test_search(client):
     assert all(
         elem in data["files"]
         for elem in [
-            {"hash": d["hash"], "name": d["name"], "size": d["size"], "peers": [f"""127.0.0.1:{DATA_REGISTER2["listen_port"]}"""]}
+            {
+                "hash": d["hash"],
+                "name": d["name"],
+                "size": d["size"],
+                "peers": [f"""127.0.0.1:{DATA_REGISTER2["listen_port"]}"""],
+            }
             for d in DATA_OFFERFILES2["files"]
         ]
     )
@@ -121,7 +126,12 @@ def test_search(client):
     assert all(
         elem in data["files"]
         for elem in [
-            {"hash": d["hash"], "name": d["name"], "size": d["size"], "peers": [f"""127.0.0.1:{DATA_REGISTER["listen_port"]}"""]}
+            {
+                "hash": d["hash"],
+                "name": d["name"],
+                "size": d["size"],
+                "peers": [f"""127.0.0.1:{DATA_REGISTER["listen_port"]}"""],
+            }
             for d in DATA_OFFERFILES["files"]
         ]
     )

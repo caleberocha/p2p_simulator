@@ -1,7 +1,7 @@
 import os
 import socket
 import random
-from datetime import datetime, timezone
+from datetime import datetime
 from tabulate import tabulate
 from . import constants
 
